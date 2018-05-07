@@ -13,6 +13,23 @@ binmode(STDIN, ':encoding(utf8)');
 binmode(STDOUT, ':encoding(utf8)');
 binmode(STDERR, ':encoding(utf8)');
 
+sub split_comma {
+  my @cols = split(' ',$_[0]);# 小空白前面是詞，後面是注音
+  my $pos = 1; # 現在字數
+  my $buf = ""; # output buffer
+  my $output = "";
+  my @wlist = split('，',@cols[0]);
+  foreach my $w (@wlist) { # 用大豆號隔開
+    $end_pos = $pos + length($w);
+    $buf = "$w";
+    for (;$pos<$end_pos;$pos++) {
+      $buf.= " @cols[$pos]";
+    }
+    $output.="$buf\n";
+  }
+  return $output;
+}
+
 $infile = $ARGV[0];
 $parser = Spreadsheet::ParseExcel->new();
 $workbook = $parser->parse($infile);
@@ -31,11 +48,11 @@ foreach my $i ($row_min+1 .. $row_max) {
   @ext_zuyin = split /\([一二三四]\)/, $ext;
   if ($word !~ m/gif/)  { # 多字詞會用大空白隔開每個字的注音。
     if ($zuyin =~ m/(^[ˊˇˋ˙ㄅㄆㄇㄈㄉㄊㄋㄌㄍㄎㄏㄐㄑㄒㄓㄔㄕㄖㄗㄘㄙㄧㄨㄩㄚㄛㄜㄝㄞㄟㄠㄡㄢㄣㄤㄥㄦ　]+)/) {
-      print "$word $zuyin\n";
+      print split_comma("$word $zuyin");
     }
     foreach my $w (@ext_zuyin) {
       if ($w =~ m/(^[ˊˇˋ˙ㄅㄆㄇㄈㄉㄊㄋㄌㄍㄎㄏㄐㄑㄒㄓㄔㄕㄖㄗㄘㄙㄧㄨㄩㄚㄛㄜㄝㄞㄟㄠㄡㄢㄣㄤㄥㄦ　]+)/) {
-        print "$word $1\n";
+        print split_comma("$word $1");
       }
     }
   }
