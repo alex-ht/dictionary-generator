@@ -29,8 +29,7 @@ foreach my $i ($row_min+1 .. $row_max) {
   $word =~ s/[（(].*[）)]//g;
   $zuyin =~ s/[（(].*[）)]//g;
   @ext_zuyin = split /\([一二三四]\)/, $ext;
-  if ($word !~ m/gif/) {
-    # 多字詞會用大空白隔開每個字的注音。
+  if ($word !~ m/gif/)  { # 多字詞會用大空白隔開每個字的注音。
     if ($zuyin =~ m/(^[ˊˇˋ˙ㄅㄆㄇㄈㄉㄊㄋㄌㄍㄎㄏㄐㄑㄒㄓㄔㄕㄖㄗㄘㄙㄧㄨㄩㄚㄛㄜㄝㄞㄟㄠㄡㄢㄣㄤㄥㄦ　]+)/) {
       print "$word $zuyin\n";
     }
