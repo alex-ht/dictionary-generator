@@ -9,9 +9,10 @@
 
 use Spreadsheet::ParseExcel;
 use utf8;
-binmode(STDIN, ':encoding(utf8)');
-binmode(STDOUT, ':encoding(utf8)');
-binmode(STDERR, ':encoding(utf8)');
+binmode(STDIN, ':encoding(UTF-8)');
+binmode(STDOUT, ':encoding(UTF-8)');
+binmode(STDERR, ':encoding(UTF-8)');
+use warnings FATAL => 'utf8';
 
 sub split_comma {
   my @cols = split(' ',$_[0]);# 小空白前面是詞，後面是注音
@@ -19,11 +20,21 @@ sub split_comma {
   my $buf = ""; # output buffer
   my $output = "";
   my @wlist = split('，',@cols[0]);
+  my @cols_fix;
+  foreach my $z (@cols) {
+    if ($z =~ m/ㄦ$/) {
+      $z =~ s/ㄦ$//g;
+      push(@cols_fix, $z);
+      push(@cols_fix, 'ㄦ');
+    } else {
+      push(@cols_fix, $z);
+    }
+  }
   foreach my $w (@wlist) { # 用大豆號隔開
     $end_pos = $pos + length($w);
     $buf = "$w";
     for (;$pos<$end_pos;$pos++) {
-      $buf.= " @cols[$pos]";
+      $buf.= " @cols_fix[$pos]";
     }
     $output.="$buf\n";
   }
@@ -47,12 +58,14 @@ foreach my $i ($row_min+1 .. $row_max) {
   $zuyin =~ s/[（(].*[）)]//g;
   @ext_zuyin = split /\([一二三四]\)/, $ext;
   if ($word !~ m/gif/)  { # 多字詞會用大空白隔開每個字的注音。
-    if ($zuyin =~ m/(^[ˊˇˋ˙ㄅㄆㄇㄈㄉㄊㄋㄌㄍㄎㄏㄐㄑㄒㄓㄔㄕㄖㄗㄘㄙㄧㄨㄩㄚㄛㄜㄝㄞㄟㄠㄡㄢㄣㄤㄥㄦ　]+)/) {
-      print split_comma("$word $zuyin");
-    }
-    foreach my $w (@ext_zuyin) {
-      if ($w =~ m/(^[ˊˇˋ˙ㄅㄆㄇㄈㄉㄊㄋㄌㄍㄎㄏㄐㄑㄒㄓㄔㄕㄖㄗㄘㄙㄧㄨㄩㄚㄛㄜㄝㄞㄟㄠㄡㄢㄣㄤㄥㄦ　]+)/) {
-        print split_comma("$word $1");
+    eval {
+      if ($zuyin =~ m/(^[ˊˇˋ˙ㄅㄆㄇㄈㄉㄊㄋㄌㄍㄎㄏㄐㄑㄒㄓㄔㄕㄖㄗㄘㄙㄧㄨㄩㄚㄛㄜㄝㄞㄟㄠㄡㄢㄣㄤㄥㄦ　]+)/) {
+        print split_comma("$word $zuyin");
+      }
+      foreach my $w (@ext_zuyin) {
+        if ($w =~ m/(^[ˊˇˋ˙ㄅㄆㄇㄈㄉㄊㄋㄌㄍㄎㄏㄐㄑㄒㄓㄔㄕㄖㄗㄘㄙㄧㄨㄩㄚㄛㄜㄝㄞㄟㄠㄡㄢㄣㄤㄥㄦ　]+)/) {
+          print split_comma("$word $1");
+        }
       }
     }
   }
